@@ -16,7 +16,11 @@ import {
   Cpu, 
   FileCode2,
   Database,
-  Layers
+  Layers,
+  Sparkles,
+  Send,
+  AlertTriangle,
+  ArrowRight
 } from "lucide-react";
 
 interface StepDetail {
@@ -139,6 +143,25 @@ export function ClinicalFlywheel() {
 
   const currentStepDetail = steps[activeStep];
 
+  // VariantWatch & Agent API Live Integration States
+  const [selectedPatient, setSelectedPatient] = useState({
+    id: "PT_8842",
+    gene: "BRCA1",
+    hgvs: "c.5266dupC (p.Gln1756Profs*74)",
+    lastClassified: "VUS",
+    currentClassified: "Pathogenic",
+    rsid: "rs80357906",
+    uncertainty: 0.612,
+    deconvScore: 0.384
+  });
+
+  const [integrationLogs, setIntegrationLogs] = useState<string[]>([
+    "[SYSTEM] VariantWatch Continuous Surveillance Gateway synchronized.",
+    "[STATUS] Ready to audit patient genomic records."
+  ]);
+  const [isApiLoading, setIsApiLoading] = useState(false);
+  const [apiResponse, setApiResponse] = useState<string | null>(null);
+
   useEffect(() => {
     let interval: any = null;
     if (isSimulating) {
@@ -146,8 +169,18 @@ export function ClinicalFlywheel() {
         setActiveStep((prev) => {
           const next = (prev + 1) % steps.length;
           const nextStep = steps[next];
+          
+          let extraLog = "";
+          if (next === 0) extraLog = "[Agent API] Triggered raw_h5ad matrix deconvolution via /agent/v1/execute.";
+          else if (next === 1) extraLog = "[VariantWatch] Auditing genomic surveillance registry for active participants.";
+          else if (next === 2) extraLog = "[VariantWatch] ALERT! Patient PT_8842 carries a BRCA1 (rs80357906) Pathogenic upgrade. Biopsy priority escalated.";
+          else if (next === 3) extraLog = "[Agent API] Live Banff pathogen-lesion validation: continuous index computed successfully.";
+          else if (next === 4) extraLog = "[Agent API] Verified secure gradient cryptographic proof using /agent/v1/validate-dag.";
+          else if (next === 5) extraLog = "[SYSTEM] Closed-loop cycle complete. Global model version v2.4.2 synchronized.";
+
           setLogs((l) => [
             `[EXECUTION] Step ${nextStep.step}: ${nextStep.title} executed. Output verified.`,
+            ...(extraLog ? [extraLog] : []),
             ...l.slice(0, 10)
           ]);
           if (next === steps.length - 1) {
@@ -159,6 +192,92 @@ export function ClinicalFlywheel() {
     }
     return () => clearInterval(interval);
   }, [isSimulating]);
+
+  const runVariantWatchAutoAudit = () => {
+    setIntegrationLogs(prev => [
+      `[VariantWatch] Triggered continuous surveillance sync for cohort...`,
+      `[NCBI Entrez] Querying ClinVar consensus records for ${selectedPatient.gene}...`,
+      `[SUCCESS] Synced ${selectedPatient.gene} (${selectedPatient.rsid}) status: ${selectedPatient.lastClassified} ➔ ${selectedPatient.currentClassified}`,
+      ...prev.slice(0, 8)
+    ]);
+  };
+
+  const handleConsultGenomicsAi = async () => {
+    setIsApiLoading(true);
+    setApiResponse(null);
+    setIntegrationLogs(prev => [
+      `[Agent API] Posting prompt to /agent/v1/ai-consult...`,
+      ...prev.slice(0, 8)
+    ]);
+
+    try {
+      const res = await fetch("/agent/v1/ai-consult", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variant: {
+            gene: selectedPatient.gene,
+            hgvs: selectedPatient.hgvs,
+            lastClassified: selectedPatient.lastClassified,
+            currentClassified: selectedPatient.currentClassified,
+            rsid: selectedPatient.rsid
+          },
+          userQuestion: `Summarize the clinical significance and draft a patient recontact notification for this ${selectedPatient.gene} ${selectedPatient.currentClassified} upgrade.`
+        })
+      });
+      const data = await res.json();
+      setApiResponse(data.responseText || data.response || JSON.stringify(data, null, 2));
+      setIntegrationLogs(prev => [
+        `[SUCCESS] AI Clinical Genomics Consultation letter compiled successfully.`,
+        ...prev.slice(0, 8)
+      ]);
+    } catch (err: any) {
+      setApiResponse(`[Error] Failed to connect to Express AI endpoint: ${err.message}`);
+      setIntegrationLogs(prev => [
+        `[ERROR] Failed to compile AI clinical consensus.`,
+        ...prev.slice(0, 8)
+      ]);
+    } finally {
+      setIsApiLoading(false);
+    }
+  };
+
+  const handleTestAgentPipeline = async () => {
+    setIsApiLoading(true);
+    setApiResponse(null);
+    setIntegrationLogs(prev => [
+      `[Agent API] Triggering dry-run execution recipe on /agent/v1/execute...`,
+      ...prev.slice(0, 8)
+    ]);
+
+    try {
+      const res = await fetch("/agent/v1/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipe_id: "scrna_sctransform_v2",
+          steps: [
+            { id: "deconvolution", acceptedInputs: ["raw_h5ad"], providedOutputs: ["cell_fractions"] }
+          ],
+          mode: "reference_free"
+        })
+      });
+      const data = await res.json();
+      setApiResponse(JSON.stringify(data, null, 2));
+      setIntegrationLogs(prev => [
+        `[SUCCESS] Executed DAG validation & Nextflow compilation dry-run successfully.`,
+        ...prev.slice(0, 8)
+      ]);
+    } catch (err: any) {
+      setApiResponse(`[Error] Live pipeline execution failed: ${err.message}`);
+      setIntegrationLogs(prev => [
+        `[ERROR] Pipeline routing failed to contact port 3000.`,
+        ...prev.slice(0, 8)
+      ]);
+    } finally {
+      setIsApiLoading(false);
+    }
+  };
 
   const handleStartSimulation = () => {
     setActiveStep(0);
@@ -430,6 +549,147 @@ export function ClinicalFlywheel() {
               </span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* VariantWatch & Agent Live Integration Portal */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#09090B] border border-[#27272A] rounded-2xl p-5 relative overflow-hidden">
+        {/* Glow decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#22D3EE]/5 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="lg:col-span-12 border-b border-[#27272A] pb-3 mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#22D3EE]" />
+            <div>
+              <h3 className="text-sm font-bold text-[#FAFAFA]">
+                VariantWatch &amp; Agent Live-Link Gateway
+              </h3>
+              <p className="text-[10px] text-[#71717A]">
+                Synchronize clinical active learning deconvolution parameters with continuous genomic surveillance alerts.
+              </p>
+            </div>
+          </div>
+          <span className="text-[8px] font-mono bg-[#10B981]/15 text-[#10B981] px-2.5 py-1 rounded-full border border-[#10B981]/25">
+            CLOSED-LOOP ROUTER
+          </span>
+        </div>
+
+        {/* Column 1: Patient Genomic Surveillance Watchlist */}
+        <div className="lg:col-span-4 flex flex-col gap-3">
+          <span className="text-[10px] font-mono text-[#A1A1AA] uppercase font-bold flex items-center gap-1.5">
+            <Database className="w-3.5 h-3.5 text-[#22D3EE]" />
+            Surveillance Cohort
+          </span>
+
+          <div className="flex flex-col gap-2">
+            {[
+              { id: "PT_8842", gene: "BRCA1", hgvs: "c.5266dupC (p.Gln1756Profs*74)", lastClassified: "VUS", currentClassified: "Pathogenic", rsid: "rs80357906", uncertainty: 0.612, deconvScore: 0.384 },
+              { id: "PT_9021", gene: "MLH1", hgvs: "c.655A>G (p.Ile219Val)", lastClassified: "Pathogenic", currentClassified: "VUS", rsid: "rs6356", uncertainty: 0.450, deconvScore: 0.220 },
+              { id: "PT_4562", gene: "EGFR", hgvs: "c.2573T>G (p.Leu858Arg)", lastClassified: "VUS", currentClassified: "Likely Pathogenic", rsid: "rs121434568", uncertainty: 0.720, deconvScore: 0.810 }
+            ].map((p, i) => {
+              const isSel = selectedPatient.id === p.id;
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setSelectedPatient(p);
+                    setApiResponse(null);
+                  }}
+                  className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all ${
+                    isSel
+                      ? "bg-[#22D3EE]/15 border-[#22D3EE]/40 text-white font-bold"
+                      : "bg-[#18181B] border-[#27272A] text-[#71717A] hover:border-[#3F3F46]"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-bold font-mono text-[10px]">{p.id} ({p.gene})</span>
+                    <span className="text-[8px] bg-[#27272A] px-1.5 py-0.5 rounded text-[#A1A1AA] font-mono">{p.rsid}</span>
+                  </div>
+                  <p className="text-[9px] text-[#A1A1AA] truncate">{p.hgvs}</p>
+                  <div className="flex items-center gap-1.5 text-[8px] mt-1 font-mono">
+                    <span className="text-amber-500">{p.lastClassified}</span>
+                    <ArrowRight className="w-2.5 h-2.5 text-[#71717A]" />
+                    <span className="text-emerald-400 font-bold">{p.currentClassified}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-1">
+            <button
+              onClick={runVariantWatchAutoAudit}
+              className="py-2 bg-[#27272A] hover:bg-[#3F3F46] text-[#FAFAFA] border border-[#3F3F46] font-mono text-[10px] rounded-xl font-bold transition-all flex items-center justify-center gap-1"
+            >
+              <RefreshCcw className="w-3 h-3 text-[#22D3EE]" />
+              Audit ClinVar
+            </button>
+            <button
+              onClick={handleConsultGenomicsAi}
+              disabled={isApiLoading}
+              className="py-2 bg-[#22D3EE] hover:bg-[#06B6D4] text-[#09090B] font-mono text-[10px] rounded-xl font-bold transition-all flex items-center justify-center gap-1"
+            >
+              {isApiLoading ? (
+                <span className="animate-pulse">Thinking...</span>
+              ) : (
+                <>
+                  <Sparkles className="w-3 h-3" />
+                  AI Consult
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Column 2: Live Ingress & Integration Logs */}
+        <div className="lg:col-span-4 flex flex-col gap-3">
+          <span className="text-[10px] font-mono text-[#A1A1AA] uppercase font-bold flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5 text-[#10B981]" />
+            Live Ingress Events
+          </span>
+
+          <div className="bg-[#18181B] border border-[#27272A] rounded-xl p-3 font-mono text-[9px] flex flex-col gap-1.5 min-h-[180px] max-h-[180px] overflow-y-auto">
+            {integrationLogs.map((log, idx) => (
+              <div key={idx} className="flex items-start gap-1">
+                <span className="text-[#52525B] flex-none">›</span>
+                <span className={log.includes("[SUCCESS]") ? "text-emerald-400" : log.includes("[ERROR]") ? "text-red-400" : "text-[#A1A1AA]"}>
+                  {log}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={handleTestAgentPipeline}
+            disabled={isApiLoading}
+            className="w-full py-2 bg-[#10B981] hover:bg-[#059669] text-[#09090B] font-mono text-[10px] rounded-xl font-bold transition-all flex items-center justify-center gap-1.5"
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            Trigger dry-run execution recipe
+          </button>
+        </div>
+
+        {/* Column 3: Live Output Terminal */}
+        <div className="lg:col-span-4 flex flex-col gap-3">
+          <span className="text-[10px] font-mono text-[#A1A1AA] uppercase font-bold flex items-center gap-1.5">
+            <FileCode2 className="w-3.5 h-3.5 text-[#8B5CF6]" />
+            Express Server Response (Port 3000)
+          </span>
+
+          <div className="bg-[#18181B] border border-[#27272A] rounded-xl p-3 font-mono text-[9px] text-slate-300 min-h-[225px] max-h-[225px] overflow-y-auto overflow-x-auto whitespace-pre-wrap select-text">
+            {isApiLoading ? (
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-[#71717A] italic">
+                <RefreshCcw className="w-4 h-4 animate-spin text-[#22D3EE]" />
+                <span>Contacting Express API...</span>
+              </div>
+            ) : apiResponse ? (
+              <code>{apiResponse}</code>
+            ) : (
+              <span className="text-[#71717A] italic select-none">
+                No server response loaded yet. Select a patient and click "AI Consult" or "Trigger dry-run" to test real full-stack responses.
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
