@@ -19,6 +19,7 @@ import { SpatialTmeDeconvolution } from "./components/SpatialTmeDeconvolution";
 import { CrisprScreenExplorer } from "./components/CrisprScreenExplorer";
 import { LiquidBiopsyMrd } from "./components/LiquidBiopsyMrd";
 import { ClonalEvolutionEngine } from "./components/ClonalEvolutionEngine";
+import { PatientTrajectoryExplorer } from "./components/PatientTrajectoryExplorer";
 
 import { 
   Dna, 
@@ -36,7 +37,8 @@ import {
   Activity,
   GitBranch,
   ShieldCheck,
-  Network
+  Network,
+  TrendingUp
 } from "lucide-react";
 
 export default function App() {
@@ -61,6 +63,9 @@ export default function App() {
         </div>
         
         <div className="hidden md:flex items-center gap-4 text-[10px] font-mono font-bold text-[#71717A]">
+          <a href="#patient-trajectory" className="hover:text-[#EC4899] text-[#EC4899] transition-colors flex items-center gap-1">
+            <TrendingUp className="w-3 h-3" /> TRAJECTORY & CONFLICTS
+          </a>
           <a href="#compliance" className="hover:text-[#10B981] text-[#10B981] transition-colors flex items-center gap-1">
             <ShieldCheck className="w-3 h-3" /> AUTO-UPDATE & COMPLIANCE
           </a>
@@ -279,6 +284,11 @@ export default function App() {
             {activeOncologyTab === "liquid" && <LiquidBiopsyMrd />}
             {activeOncologyTab === "clonal" && <ClonalEvolutionEngine />}
           </div>
+        </section>
+
+        {/* Clinical Precision Trajectory, Variant Rules & Conflict Explorer Suite */}
+        <section id="patient-trajectory" className="scroll-mt-24 w-full">
+          <PatientTrajectoryExplorer />
         </section>
 
         {/* Console Grid */}

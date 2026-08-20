@@ -9,7 +9,7 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "test": "tsx src/__tests__/schemaValidator.test.ts && tsx src/__tests__/dagValidation.test.ts",
+    "test": "tsx src/__tests__/schemaValidator.test.ts && tsx src/__tests__/dagValidation.test.ts && tsx src/__tests__/utils.test.ts && tsx src/__tests__/pipelineGenerator.test.ts && tsx src/__tests__/metaAnalysis.test.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

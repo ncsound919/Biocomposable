@@ -129,6 +129,17 @@ export function SelfUpdateComplianceEngine() {
       executionTimeMs: 3.5,
       seed: 42,
       standard: "CLIA High-Complexity"
+    },
+    {
+      id: "assert_6",
+      module: "Transplant Pathology",
+      testName: "Banff 2023 Lesion Code / MVI Triad Invariant Validation",
+      expectedHash: "0xcf92b1a80d5b3c41",
+      actualHash: "0xcf92b1a80d5b3c41",
+      status: "passed",
+      executionTimeMs: 0.5,
+      seed: 42,
+      standard: "FDA GxP Data Contract"
     }
   ]);
 
