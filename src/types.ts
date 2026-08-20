@@ -70,8 +70,8 @@ export interface ComponentManifest {
 export interface RecipeStepState {
   id: string;
   params: Record<string, string | number | boolean>;
-  condition: string | null;
-  expanded: boolean;
+  condition?: string | null;
+  expanded?: boolean;
 }
 
 export interface DeterminismItem {

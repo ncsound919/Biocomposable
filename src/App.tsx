@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { CapabilitiesExplorer } from "./components/CapabilitiesExplorer";
 import { ArchitectureStack } from "./components/ArchitectureStack";
 import { ContractsExplorer } from "./components/ContractsExplorer";
 import { RecipeBuilder } from "./components/RecipeBuilder";
@@ -8,6 +10,8 @@ import { AgentAPI } from "./components/AgentAPI";
 import { ReferenceFreeMode } from "./components/ReferenceFreeMode";
 import { ClinicalFlywheel } from "./components/ClinicalFlywheel";
 import { SelfUpdateComplianceEngine } from "./components/SelfUpdateComplianceEngine";
+import { DeterministicSelfLearningEngine } from "./components/DeterministicSelfLearningEngine";
+import { UnifiedOntologyEngine } from "./components/UnifiedOntologyEngine";
 
 // 5 Major Precision Oncology & Cancer Research Additions
 import { CancerNeoantigenEngine } from "./components/CancerNeoantigenEngine";
@@ -31,7 +35,8 @@ import {
   Target,
   Activity,
   GitBranch,
-  ShieldCheck
+  ShieldCheck,
+  Network
 } from "lucide-react";
 
 export default function App() {
@@ -58,6 +63,12 @@ export default function App() {
         <div className="hidden md:flex items-center gap-4 text-[10px] font-mono font-bold text-[#71717A]">
           <a href="#compliance" className="hover:text-[#10B981] text-[#10B981] transition-colors flex items-center gap-1">
             <ShieldCheck className="w-3 h-3" /> AUTO-UPDATE & COMPLIANCE
+          </a>
+          <a href="#self-learning" className="hover:text-[#22D3EE] text-[#22D3EE] transition-colors flex items-center gap-1">
+            <GitMerge className="w-3 h-3" /> SELF-LEARNING
+          </a>
+          <a href="#ontology-engine" className="hover:text-[#8B5CF6] text-[#8B5CF6] transition-colors flex items-center gap-1">
+            <Network className="w-3 h-3" /> ONTOLOGY
           </a>
           <a href="#oncology" className="hover:text-[#22D3EE] text-[#22D3EE] transition-colors flex items-center gap-1">
             <Sparkles className="w-3 h-3" /> ONCOLOGY SUITE
@@ -111,9 +122,74 @@ export default function App() {
           </div>
         </section>
 
+        {/* PLATFORM TRANSPARENCY & REAL-WORLD EXECUTION AUDIT */}
+        <section className="bg-[#18181B] border border-[#F59E0B]/30 rounded-3xl p-6 md:p-8 flex flex-col gap-4 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#27272A] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B]">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#FAFAFA]">Platform Transparency & Architecture Reality Audit</h3>
+                <p className="text-xs text-[#A1A1AA]">
+                  Dual specification framework: Interactive educational whitepaper + Live full-stack execution engine.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 font-mono text-[10px]">
+              <span className="bg-[#10B981]/10 text-[#10B981] px-2.5 py-1 rounded-full border border-[#10B981]/30 font-bold">
+                EXPRESS BACKEND LIVE (PORT 3000)
+              </span>
+              <span className="bg-[#22D3EE]/10 text-[#22D3EE] px-2.5 py-1 rounded-full border border-[#22D3EE]/30 font-bold">
+                GEMINI 3.6 INTEGRATED
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-[11px]">
+            <div className="bg-[#09090B] border border-[#27272A] p-4 rounded-2xl flex flex-col gap-2">
+              <span className="text-[#F59E0B] font-bold text-xs uppercase">1. Architectural Specification</span>
+              <p className="text-[#A1A1AA] text-[10px] leading-relaxed">
+                Visualizes contract-first bioinformatics principles: Banff 2023 kidney transplant schemas, Reproducibility Debt (RpD) metrics, and MuData cross-modal single-cell data objects.
+              </p>
+            </div>
+
+            <div className="bg-[#09090B] border border-[#27272A] p-4 rounded-2xl flex flex-col gap-2">
+              <span className="text-[#10B981] font-bold text-xs uppercase">2. Real Express Agent Server</span>
+              <p className="text-[#A1A1AA] text-[10px] leading-relaxed">
+                Express server runs on port 3000 hosting live endpoints <code className="text-[#10B981]">/agent/v1/execute</code>, <code className="text-[#10B981]">/agent/v1/validate-dag</code>, and <code className="text-[#10B981]">/agent/v1/query</code>.
+              </p>
+            </div>
+
+            <div className="bg-[#09090B] border border-[#27272A] p-4 rounded-2xl flex flex-col gap-2">
+              <span className="text-[#22D3EE] font-bold text-xs uppercase">3. Production PyPI Mapping</span>
+              <p className="text-[#A1A1AA] text-[10px] leading-relaxed">
+                Abstract <code className="text-[#22D3EE]">bio-*</code> specifications map directly to standard production packages: <code className="text-[#22D3EE]">mudata</code>, <code className="text-[#22D3EE]">scanpy</code>, <code className="text-[#22D3EE]">pydantic</code>, and <code className="text-[#22D3EE]">decoupler</code>.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ARCHITECTURE CAPABILITIES OVERVIEW */}
+        <section id="capabilities" className="scroll-mt-24">
+          <ErrorBoundary>
+            <CapabilitiesExplorer />
+          </ErrorBoundary>
+        </section>
+
         {/* SELF-UPDATING & DETERMINISTIC COMPLIANCE ENGINE */}
         <section id="compliance" className="scroll-mt-24">
           <SelfUpdateComplianceEngine />
+        </section>
+
+        {/* DETERMINISTIC SELF-LEARNING ENGINE */}
+        <section id="self-learning" className="scroll-mt-24">
+          <DeterministicSelfLearningEngine />
+        </section>
+
+        {/* UNIFIED ONTOLOGY & DETERMINISTIC MAPPING ENGINE */}
+        <section id="ontology-engine" className="scroll-mt-24">
+          <UnifiedOntologyEngine />
         </section>
 
         {/* 5 MAJOR PRECISION ONCOLOGY ADDITIONS SUITE */}
